@@ -1,14 +1,9 @@
-using Pkg
-pkg"activate ."
-
-using Genie, HTTP
+using Genie, HTTP, Test
 import Genie.Router: route
 
 route("/hello") do
   "Welcome to Genie!"
 end
 Genie.AppServer.startup()
-
-HTTP.get("http://localhost:8000/hello")
-
-exit(0)
+response = HTTP.get("http://localhost:8000/hello")
+@test String(response.body) == "Welcome to Genie!"
