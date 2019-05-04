@@ -1,26 +1,18 @@
-using Pkg
-pkg"activate ."
+using Genie, HTTP, Test
+using Genie.Router, Genie.Responses
 
-using Genie, Genie.Router, Genie.Renderer
+@testset "Test post text field" begin
+  route("/post", method = POST) do
+     @params(:greeting)
+  end
 
-form = """
-<form action="/" method="POST" enctype="multipart/form-data">
-  <input type="text" name="greeting" value="hello genie" />
-  <input type="submit" value="upload" />
-</form>
-"""
+  Genie.AppServer.startup()
 
-layout = "<? @yield ?>"
+  response = HTTP.request("POST", "http://localhost:8000/post";
+    body="greeting=foo,bar",
+    headers=Dict("Content-Type" => "application/x-www-form-urlencoded")
+  )
 
-route("/") do
-  html!(form)
+  @test response.status == 200
+  @test String(response.body) == "foo,bar"
 end
-
-route("/", method = POST) do
-  @show @params(:FILES)
-  @show @params(:greeting)
-
-  @params(:greeting)
-end
-
-Genie.AppServer.startup(async = false)
